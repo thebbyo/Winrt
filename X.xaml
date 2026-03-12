@@ -1,45 +1,247 @@
-winrt::Windows::Foundation::IAsyncAction OtherPage::downloadPdfButton_Click(
-    winrt::Windows::Foundation::IInspectable const&,
-    winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+#include "pch.h"
+#include "OtherPage.xaml.h"
+#if __has_include("OtherPage.g.cpp")
+#include "OtherPage.g.cpp"
+#endif
+#include "BookStoreState.h"
+#include<string>
+#include<fstream>
+#include<winrt/Windows.Data.Xml.Dom.h>
+#include<winrt/Windows.UI.Notifications.h>
+
+#include "PdfState.h"
+#include <winrt/Windows.Storage.Pickers.h>
+#include <winrt/windows.storage.h>
+
+#include <filesystem>
+#include <fstream>
+using namespace winrt::Windows::Storage::Pickers;
+
+
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace winrt::Episode4::implementation
 {
-    auto sourcePath = Episode4::PdfState::SelectedPdfPath();
 
-    if (sourcePath.empty())
-    {
-        pdfStatusText().Text(L"Please select a PDF first.");
-        co_return;
-    }
+	void OtherPage::Page_Loaded(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
+		::Episode4::BookStoreState::Seed();
+		RefreshBookList();
+		RefreshSelectedBookDetails();
+		pdfNameText().Text(::Episode4::PdfState::SelectPdfName());
 
-    FileSavePicker savePicker(this->XamlRoot().ContentIsland().Environment().AppWindowId());
-    savePicker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
-    savePicker.SuggestedFileName(Episode4::PdfState::SelectedPdfName());
-    savePicker.CommitButtonText(L"Download PDF");
-    savePicker.DefaultFileExtension(L".pdf");
-    savePicker.FileTypeChoices().Insert(
-        L"PDF Document",
-        winrt::single_threaded_vector<winrt::hstring>({ L".pdf" })
-    );
+	}
 
-    auto saveResult = co_await savePicker.PickSaveFileAsync();
+	void OtherPage::RefreshBookList() {
+		bookList().Items().Clear();
+		auto const& books = ::Episode4::BookStoreState::Books();
+		for (auto const& book : books) {
+			std::wstring line = book.Title.c_str();
+			line += L" | ";
+			line += book.Author.c_str();
+			line += L" | Stock: ";
+			line += winrt::to_hstring(book.Stock).c_str();
+			if (book.Stock < 3) line += L" | low Stock Warning";
+			bookList().Items().Append(box_value(winrt::hstring(line)));
+		}
+		statusText().Text(L"Total Books : " + winrt::to_hstring(::Episode4::TotalTitles()));
+	}
 
-    if (!saveResult)
-    {
-        pdfStatusText().Text(L"Download cancelled.");
-        co_return;
-    }
+	void OtherPage::RefreshSelectedBookDetails() {
+		int32_t index = bookList().SelectedIndex();
+		if (index < 0 || index >= static_cast<int32_t>(::Episode4::BookStoreState::Books().size())) {
+			detailsText().Text(L"Select a boook from the list");
+			return;
+		}
+		auto const& book = ::Episode4::BookStoreState::Books()[index];
 
-    try
-    {
-        std::filesystem::copy_file(
-            std::filesystem::path(winrt::to_string(sourcePath)),
-            std::filesystem::path(winrt::to_string(saveResult.Path())),
-            std::filesystem::copy_options::overwrite_existing
-        );
+		std::wstring details = L"Title: ";
+		details += book.Title.c_str();
+		details += L"\nAuthor: ";
+		details += book.Author.c_str();
+		details += L"\nCategory: ";
+		details += book.Category.c_str();
+		details += L"\nPrice: $";
+		details += winrt::to_hstring(book.Price).c_str();
+		details += L"\nStock: ";
+		details += winrt::to_hstring(book.Stock).c_str();
 
-        pdfStatusText().Text(L"PDF downloaded successfully.");
-    }
-    catch (...)
-    {
-        pdfStatusText().Text(L"Failed to download PDF.");
-    }
+		detailsText().Text(winrt::hstring(details));
+	}
+
+	void OtherPage::addBookButton_Click(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
+		auto title = titleTextBox().Text();
+		auto author = authorTextBox().Text();
+		auto category = categoryTextBox().Text();
+		auto price = priceTextBox().Text();
+		auto stock = stockTextBox().Text();
+		if (title.empty() || author.empty() || category.empty() || price.empty() || stock.empty()) {
+			statusText().Text(L"Please fill all the box.. ");
+			return;
+		}
+		try {
+			std::wstring priceString = price.c_str();
+			std::wstring stockString = stock.c_str();
+			double price = std::stod(priceString);
+			int32_t stock = std::stoi(stockString);
+			::Episode4::BookStoreState::Books().push_back({
+				title, author, category, price, stock
+				});
+			titleTextBox().Text(L"");
+			authorTextBox().Text(L"");
+			categoryTextBox().Text(L"");
+			priceTextBox().Text(L"");
+			stockTextBox().Text(L"");
+			statusText().Text(L"book added");
+			RefreshBookList();
+			detailsText().Text(L"Select a book to add in list");
+			
+		}
+		catch (...) {
+			statusText().Text(L"bla bla");
+
+		}
+	}
+
+	void OtherPage::deleteSelectionButton_Click(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
+		int32_t index = bookList().SelectedIndex();
+		if(index < 0 || index >= static_cast<int32_t>(::Episode4::BookStoreState::Books().size())) {
+			statusText().Text(L"select a book");
+			return;
+		}
+		auto& books = ::Episode4::BookStoreState::Books();
+		books.erase(books.begin() + index);
+		statusText().Text(L"Selected Book deleted");
+		RefreshBookList();
+		detailsText().Text(L"Select a book from the list");
+
+	}
+	void OtherPage::bookList_SelectionChanged(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&) {
+		RefreshSelectedBookDetails();
+	}
+	void OtherPage::searchBoxTExtChanged(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs const&) {
+		auto query = winrt::to_string(searchBox().Text());
+		bookList().Items().Clear();
+		auto const& books = ::Episode4::BookStoreState::Books();
+		for (auto const& book : books) {
+			std::string title = winrt::to_string(book.Title);
+			std::string author = winrt::to_string(book.Author);
+
+			if (title.find(query) != std::string::npos || author.find(query) != std::string::npos) {
+				std::wstring line = book.Title.c_str();
+
+				line += L" | ";
+				line += book.Author.c_str();
+				bookList().Items().Append(box_value(winrt::hstring(line)));
+			}
+		}
+	}
+
+	void OtherPage::exportButtonClick(winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&) {
+		std::ofstream file("books.csv");
+		auto const& books = ::Episode4::BookStoreState::Books();
+		for (auto const& b : books) {
+			file << winrt::to_string(b.Title) << winrt::to_string(b.Author) << winrt::to_string(b.Category) << b.Price
+				<< b.Stock << "\n";
+
+		}
+
+	}
+
+	void ShowToast(winrt::hstring const& message) {
+		using namespace winrt::Windows::Data::Xml::Dom;
+		using namespace winrt::Windows::UI::Notifications;
+
+		XmlDocument toastXml;
+
+		std::wstring xml =
+			L"<toast>"
+			L"<visual>"
+			L"<binding templaate='ToastGeneric'>"
+			L"<text>Bookstore</text>"
+			L"<text>" + std::wstring(message.c_str()) + L"</text>"
+			L"</binding>"
+			L"</visual>"
+			L"</toast>";
+
+		toastXml.LoadXml(xml);
+		ToastNotification toast(toastXml);
+		ToastNotificationManager::CreateToastNotifier().Show(toast);
+
+	}
+
+	winrt::Windows::Foundation::IAsyncAction OtherPage::selectButtonClick(
+		winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&
+	) {
+		FileOpenPicker picker(this->XamlRoot().ContentIslandEnvironment().AppWindowId());
+		picker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
+		picker.CommitButtonText(L"Open Pdf");
+		picker.FileTypeFilter().Append(L".pdf");
+		auto result = co_await picker.PickSingleFileAsync();
+		if (!result) {
+			pdfNameText().Text(L"PDF selection canceled");
+			co_return;
+		}
+		::Episode4::PdfState::SelectPdfPath() = result.Path();
+		::Episode4::PdfState::SelectPdfName() = result.Name();
+		pdfNameText().Text(::Episode4::PdfState::SelectPdfName());
+		pdfStatusTExt().Text(L"PDF selected successfully");
+
+
+	}
+	winrt::Windows::Foundation::IAsyncAction OtherPage::downloadButtonClick(
+		winrt::Windows::Foundation::IInspectable const&,
+		winrt::Microsoft::UI::Xaml::RoutedEventArgs const&
+	) {
+		auto sourcePath = ::Episode4::PdfState::SelectPdfPath();
+		if (sourcePath.empty()) {
+			pdfStatusTExt().Text(L"Please add a pdf first");
+			co_return;
+		}
+
+		FileSavePicker savePicker(this->XamlRoot().ContentIslandEnvironment().AppWindowId());
+		savePicker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
+		savePicker.SuggestedFileName(::Episode4::PdfState::SelectPdfName());
+		savePicker.CommitButtonText(L"Download PDF");
+		savePicker.DefaultFileExtension(L".pdf");
+
+		savePicker.FileTypeChoices().Insert(
+			L"PDF Document",
+			winrt::single_threaded_vector<winrt::hstring>({ L".pdf" })
+		);
+
+		auto saveResult = co_await savePicker.PickSaveFileAsync();
+		if (!saveResult)
+		{
+			pdfStatusTExt().Text(L"Download cancelled.");
+			co_return;
+		}
+
+		try
+		{
+			std::filesystem::copy_file(
+				std::filesystem::path(winrt::to_string(sourcePath)),
+				std::filesystem::path(winrt::to_string(saveResult.Path())),
+				std::filesystem::copy_options::overwrite_existing
+			);
+
+			pdfStatusTExt().Text(L"PDF downloaded successfully.");
+		}
+		catch (...)
+		{
+			pdfStatusTExt().Text(L"Failed to download PDF.");
+		}
+	}
 }
+
+
