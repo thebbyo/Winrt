@@ -1,53 +1,65 @@
-#pragma once
-#include <winrt/Microsoft.UI.Xaml.h>
-#include <winrt/Microsoft.UI.Xaml.Input.h>
-#include <winrt/Windows.Foundation.h>
-struct FloatingToolBarViewModel {
-	bool mTouchDown{ false };
-	bool isPointerPressed{ false };
-	double left{ 20 };
-	double top{ 20 };
+#include "pch.h"
+#include "HomePage.xaml.h"
 
-	double width{ 260 };
-	double height{ 60 };
-	bool mOutside{ false };
-	winrt::Windows::Foundation::Point lastPoint;
+#if __has_include("HomePage.g.cpp")
+#include "HomePage.g.cpp"
+#endif
 
-	void onPointerPressed(winrt::Windows::Foundation::Point const& p,
-		bool isRight, bool isMiddle) {
-		if (isRight || isMiddle) mTouchDown = false;
-		else {
-			mTouchDown = true;
-			lastPoint = p;
-		}
-		isPointerPressed = true;
-	}
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace Microsoft::UI::Xaml::Input;
 
-	
+namespace winrt::Episode4::implementation
+{
+    HomePage::HomePage()
+    {
+        InitializeComponent();
 
+        Canvas::SetLeft(FloatingController(), toolbarVM.left);
+        Canvas::SetTop(FloatingController(), toolbarVM.top);
+    }
 
-	void onPointerMoved(
-		winrt::Windows::Foundation::Point const& p,
-		double canvasWidth,
-		double canvasHeight
-	){
-		if (!(mTouchDown && mOutside))return;
-		double x = p.X - 30;
-		double y = p.Y - 30;
-		if (x < 0) x = 0;
-		if (y < 0) y = 0;
-		if (x + width > canvasWidth) x = canvasWidth - width;
-		if (y + height > canvasHeight) y = canvasHeight - height;
+    void HomePage::DragHandle_PointerPressed(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        auto point = e.GetCurrentPoint(RootCanvas());
 
-		left = x;
-		top = y;
-		isPointerPressed = false;
-	}
+        toolbarVM.onPointerPressed(
+            point.Position(),
+            point.Properties().IsRightButtonPressed(),
+            point.Properties().IsMiddleButtonPressed());
 
-	void onPointerReleased() {
-		isPointerPressed = false;
-		mTouchDown = false;
-	}
+        auto handle = sender.as<UIElement>();
+        handle.CapturePointer(e.Pointer());
+    }
 
-	
-};
+    void HomePage::DragHandle_PointerMoved(
+        winrt::Windows::Foundation::IInspectable const&,
+        PointerRoutedEventArgs const& e)
+    {
+        if (!toolbarVM.mTouchDown)
+            return;
+
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        toolbarVM.onPointerMoved(
+            point.Position(),
+            RootCanvas().ActualWidth(),
+            RootCanvas().ActualHeight());
+
+        Canvas::SetLeft(FloatingController(), toolbarVM.left);
+        Canvas::SetTop(FloatingController(), toolbarVM.top);
+    }
+
+    void HomePage::DragHandle_PointerReleased(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        toolbarVM.onPointerReleased();
+
+        auto handle = sender.as<UIElement>();
+        handle.ReleasePointerCapture(e.Pointer());
+    }
+}
