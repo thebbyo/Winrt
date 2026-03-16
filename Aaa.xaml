@@ -1,62 +1,65 @@
-#pragma once
-#include <winrt/Windows.Foundation.h>
+#include "pch.h"
+#include "HomePage.xaml.h"
 
-struct FloatingToolBarViewModel
+#if __has_include("HomePage.g.cpp")
+#include "HomePage.g.cpp"
+#endif
+
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace Microsoft::UI::Xaml::Input;
+
+namespace winrt::Episode4::implementation
 {
-    bool mTouchDown{ false };
-    bool isPointerPressed{ false };
-
-    double left{ 20 };
-    double top{ 20 };
-
-    double width{ 260 };
-    double height{ 60 };
-
-    winrt::Windows::Foundation::Point lastPoint;
-
-    void onPointerPressed(
-        winrt::Windows::Foundation::Point const& p,
-        bool isRight,
-        bool isMiddle)
+    HomePage::HomePage()
     {
-        if (isRight || isMiddle)
-        {
-            mTouchDown = false;
-        }
-        else
-        {
-            mTouchDown = true;
-            lastPoint = p;
-        }
+        InitializeComponent();
 
-        isPointerPressed = true;
+        Canvas::SetLeft(FloatingController(), toolbarVM.left);
+        Canvas::SetTop(FloatingController(), toolbarVM.top);
     }
 
-    void onPointerMoved(
-        winrt::Windows::Foundation::Point const& p,
-        double canvasWidth,
-        double canvasHeight)
+    void HomePage::DragHandle_PointerPressed(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
     {
-        if (!mTouchDown)
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        toolbarVM.onPointerPressed(
+            point.Position(),
+            point.Properties().IsRightButtonPressed(),
+            point.Properties().IsMiddleButtonPressed());
+
+        auto handle = sender.as<UIElement>();
+        handle.CapturePointer(e.Pointer());
+    }
+
+    void HomePage::DragHandle_PointerMoved(
+        winrt::Windows::Foundation::IInspectable const&,
+        PointerRoutedEventArgs const& e)
+    {
+        if (!toolbarVM.mTouchDown)
             return;
 
-        double dx = p.X - lastPoint.X;
-        double dy = p.Y - lastPoint.Y;
+        auto point = e.GetCurrentPoint(RootCanvas());
 
-        left += dx;
-        top += dy;
+        toolbarVM.onPointerMoved(
+            point.Position(),
+            RootCanvas().ActualWidth(),
+            RootCanvas().ActualHeight());
 
-        if (left < 0) left = 0;
-        if (top < 0) top = 0;
-        if (left + width > canvasWidth) left = canvasWidth - width;
-        if (top + height > canvasHeight) top = canvasHeight - height;
-
-        lastPoint = p;
+        Canvas::SetLeft(FloatingController(), toolbarVM.left);
+        Canvas::SetTop(FloatingController(), toolbarVM.top);
     }
 
-    void onPointerReleased()
+    void HomePage::DragHandle_PointerReleased(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
     {
-        isPointerPressed = false;
-        mTouchDown = false;
+        toolbarVM.onPointerReleased();
+
+        auto handle = sender.as<UIElement>();
+        handle.ReleasePointerCapture(e.Pointer());
     }
-};
+}
