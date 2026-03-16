@@ -1,45 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="Episode4.HomePage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Episode4"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+#pragma once
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+#include <winrt/Windows.Foundation.h>
+struct FloatingToolBarViewModel {
+	bool mTouchDown{ false };
+	bool isPointerPressed{ false };
+	double left{ 20 };
+	double top{ 20 };
 
-    <Grid>
-        <Canvas x:Name="RootCanvas">
-            <Border x:Name="FloatingController"
-                       Width="260"
-                       Height="60"
-                       Canvas.Left="20"
-                       Canvas.Top="20"
-                       BorderBrush="#4e4e4e"
-                       Background="#fffcfcfc"
-                       CornerRadius="18"
-                       Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="18">
-                    <Image x:Name="DragHandle"
-                               Source="/D:/SamsungNotes/SamsungNotes/Assets/Images/Composer/Voice/Voice_Recording/ic_voice_floating_handler.svg"
-                               Width="20"
-                               Height="36"
-                               Margin="0, 0 ,0, 0"
-                               PointerPressed="DragHandle_PointerPressed"
-                               PointerMoved="DragHandle_PointerMoved"
-                               PointerReleased="DragHandle_PointerReleased"/>
+	double width{ 260 };
+	double height{ 60 };
+	bool mOutside{ false };
+	winrt::Windows::Foundation::Point lastPoint;
 
-                    <Button Content="a" Width="40"/>
-                    <Button Content="b" Width="40"/>
-                    <Button Content="c" Width="40"/>
+	void onPointerPressed(winrt::Windows::Foundation::Point const& p,
+		bool isRight, bool isMiddle) {
+		if (isRight || isMiddle) mTouchDown = false;
+		else {
+			mTouchDown = true;
+			lastPoint = p;
+		}
+		isPointerPressed = true;
+	}
+
+	
 
 
-                </StackPanel>
-                </Border>
+	void onPointerMoved(
+		winrt::Windows::Foundation::Point const& p,
+		double canvasWidth,
+		double canvasHeight
+	){
+		if (!(mTouchDown && mOutside))return;
+		double x = p.X - 30;
+		double y = p.Y - 30;
+		if (x < 0) x = 0;
+		if (y < 0) y = 0;
+		if (x + width > canvasWidth) x = canvasWidth - width;
+		if (y + height > canvasHeight) y = canvasHeight - height;
 
+		left = x;
+		top = y;
+		isPointerPressed = false;
+	}
 
-         
+	void onPointerReleased() {
+		isPointerPressed = false;
+		mTouchDown = false;
+	}
 
-        </Canvas>
-    </Grid>
-</Page>
+	
+};
