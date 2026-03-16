@@ -1,71 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="Episode4.HomePage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Episode4"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
-    <Grid>
-        <Canvas x:Name="RootCanvas">
-            <Grid>
-                <Border x:Name="FloatingController"
-                       Width="260"
-                       Height="60"
-                       Canvas.Left="20"
-                       Canvas.Top="20"
-                       BorderBrush="#4e4e4e"
-                       Background="#fffcfcfc"
-                       CornerRadius="18"
-                       Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="18">
-                        <Image x:Name="DragHandle"
-                               Source="/D:/SamsungNotes/SamsungNotes/Assets/Images/Composer/Voice/Voice_Recording/ic_voice_floating_handler.svg"
-                               Width="20"
-                               Height="36"
-                               Margin="0, 0 ,0, 0"
-                               PointerPressed="DragHandle_PointerPressed"
-                               PointerMoved="DragHandle_PointerMoved"
-                               PointerReleased="DragHandle_PointerReleased_1">
-
-                        </Image>
-                    </StackPanel>
-                </Border>
-
-
-            </Grid>
-
-        </Canvas>
-    </Grid>
-</Page>
-#pragma once
-
-#include "HomePage.g.h"
-#include "HomeViewModel.h"
-namespace winrt::Episode4::implementation
-{
-    struct HomePage : HomePageT<HomePage>
-    {
-        HomePage();
-        bool isDragging{ false };
-        winrt::Windows::Foundation::Point  lastPoint;
-
-
-
-        void DragHandle_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-        void DragHandle_PointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-        void DragHandle_PointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-    };
-}
-
-namespace winrt::Episode4::factory_implementation
-{
-    struct HomePage : HomePageT<HomePage, implementation::HomePage>
-    {
-    };
-}
 #include "pch.h"
 #include "HomePage.xaml.h"
 #if __has_include("HomePage.g.cpp")
@@ -74,7 +6,8 @@ namespace winrt::Episode4::factory_implementation
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
-
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace Microsoft::UI::Xaml::Input;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -96,7 +29,7 @@ namespace winrt::Episode4::implementation
 
 	) {
 		if (!isDragging) return;
-		auto current = e.GetCurrentPoint(RootCanvas()).Position();
+		winrt::Windows::Foundation::Point current = e.GetCurrentPoint(RootCanvas()).Position();
 		double dx = current.X - lastPoint.X;
 		double dy = current.Y - lastPoint.Y;
 
