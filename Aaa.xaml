@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="floatingToolBar.MainWindow"
@@ -9,56 +10,64 @@
     mc:Ignorable="d"
     Title="floatingToolBar">
 
-    <Grid>
+    <Grid Background="Transparent">
         <Canvas x:Name="RootCanvas">
+
             <Border x:Name="FloatingController"
-                   Height="Auto"
-                   Canvas.Left="20"
-                   Canvas.Top="20"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Top"
-                   BorderBrush="#4e4e4e"
-                   BorderThickness=".5"
-                   Background="#fffcfcfc"
-                   CornerRadius="18"
-                   >
-                <StackPanel Orientation="Horizontal" Spacing="18">
-                    <Grid HorizontalAlignment="Center" VerticalAlignment="Center" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="36" />
-                        </Grid.RowDefinitions>
+                    Canvas.Left="20"
+                    Canvas.Top="20"
+                    Background="#FFFCFCFC"
+                    BorderBrush="#4E4E4E"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Padding="12,8"
+                    MinHeight="52">
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <Image x:Name="DragHandle"
-                           Grid.Column="0"
-                           Source="/D:/SamsungNotes/SamsungNotes/Assets/Images/Composer/Voice/Voice_Recording/ic_voice_floating_handler.svg"
-                           Height="36"
-                           Width="20"
-                           Margin="0,0,0,0"
-                           ManipulationMode="TranslateX,TranslateY" 
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           PointerPressed="DragHandle_PointerPressed"
-                           PointerMoved="DragHandle_PointerMoved"
-                           PointerReleased="DragHandle_PointerReleased"/>
-                        <Button Content="a" Grid.Column="1"/>
-                        <Button Content="b" Grid.Column="2"/>
-                        <Button Content="c" Grid.Column="3"/>
+                <Grid ColumnSpacing="10"
+                      VerticalAlignment="Center">
 
-                    </Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
+                    <!-- Drag Handle -->
+                    <Border Grid.Column="0"
+                            Width="24"
+                            Height="36"
+                            CornerRadius="8"
+                            Background="Transparent"
+                            VerticalAlignment="Center"
+                            PointerPressed="DragHandle_PointerPressed"
+                            PointerMoved="DragHandle_PointerMoved"
+                            PointerReleased="DragHandle_PointerReleased">
 
-                </StackPanel>
+                        <TextBlock Text="⋮⋮"
+                                   FontSize="16"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#666666"/>
+                    </Border>
+
+                    <Button Grid.Column="1"
+                            Content="a"
+                            MinWidth="44"
+                            Height="36"/>
+
+                    <Button Grid.Column="2"
+                            Content="b"
+                            MinWidth="44"
+                            Height="36"/>
+
+                    <Button Grid.Column="3"
+                            Content="c"
+                            MinWidth="44"
+                            Height="36"/>
+
+                </Grid>
             </Border>
-
-
-
 
         </Canvas>
     </Grid>
