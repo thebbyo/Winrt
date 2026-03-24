@@ -1,74 +1,162 @@
+#pragma once
+#include <winrt/Windows.Foundation.h>
 
-<?xml version="1.0" encoding="utf-8"?>
-<Window
-    x:Class="floatingToolBar.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:floatingToolBar"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Title="floatingToolBar">
+struct FloatingToolbarViewModel
+{
+    bool mTouchDown{ false };
+    bool isPointerPressed{ false };
 
-    <Grid Background="Transparent">
-        <Canvas x:Name="RootCanvas">
+    double left{ 20 };
+    double top{ 20 };
 
-            <Border x:Name="FloatingController"
-                    Canvas.Left="20"
-                    Canvas.Top="20"
-                    Background="#FFFCFCFC"
-                    BorderBrush="#4E4E4E"
-                    BorderThickness="1"
-                    CornerRadius="18"
-                    Padding="12,8"
-                    MinHeight="52">
+    double width{ 120 };
+    double height{ 40 };
 
-                <Grid ColumnSpacing="10"
-                      VerticalAlignment="Center">
+    winrt::Windows::Foundation::Point lastPoint;
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+    void onPointerPressed(
+        winrt::Windows::Foundation::Point const& p,
+        bool isRight,
+        bool isMiddle)
+    {
+        if (isRight || isMiddle)
+        {
+            mTouchDown = false;
+        }
+        else
+        {
+            mTouchDown = true;
+            lastPoint = p;
+        }
 
-                    <!-- Drag Handle -->
-                    <Border Grid.Column="0"
-                            Width="24"
-                            Height="36"
-                            CornerRadius="8"
-                            Background="Transparent"
-                            VerticalAlignment="Center"
-                            PointerPressed="DragHandle_PointerPressed"
-                            PointerMoved="DragHandle_PointerMoved"
-                            PointerReleased="DragHandle_PointerReleased">
+        isPointerPressed = true;
+    }
 
-                        <TextBlock Text="⋮⋮"
-                                   FontSize="16"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Foreground="#666666"/>
-                    </Border>
+    void onPointerMoved(
+        winrt::Windows::Foundation::Point const& p,
+        double canvasWidth,
+        double canvasHeight)
+    {
+        if (!mTouchDown)
+            return;
 
-                    <Button Grid.Column="1"
-                            Content="a"
-                            MinWidth="44"
-                            Height="36"/>
+        double dx = p.X - lastPoint.X;
+        double dy = p.Y - lastPoint.Y;
 
-                    <Button Grid.Column="2"
-                            Content="b"
-                            MinWidth="44"
-                            Height="36"/>
+        left += dx;
+        top += dy;
 
-                    <Button Grid.Column="3"
-                            Content="c"
-                            MinWidth="44"
-                            Height="36"/>
+        if (left < 0) left = 0;
+        if (top < 0) top = 0;
+        if (left + width > canvasWidth) left = canvasWidth - width;
+        if (top + height > canvasHeight) top = canvasHeight - height;
 
-                </Grid>
-            </Border>
+        lastPoint = p;
+    }
 
-        </Canvas>
-    </Grid>
-</Window>
+    void onPointerReleased()
+    {
+        isPointerPressed = false;
+        mTouchDown = false;
+    }
+
+};
+
+#pragma once
+
+#include "FloatingToolbarBase.g.h"
+#include "FloatingToolbarViewModel.h"
+namespace winrt::SamsungNotes::UI::Controls::implementation
+{
+struct FloatingToolbarBase : FloatingToolbarBaseT<FloatingToolbarBase>
+{
+    FloatingToolbarBase();
+    int32_t MyProperty();
+    void MyProperty(int32_t value);
+    FloatingToolbarViewModel floatingToolbarVM;
+    void DragHandle_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+    void DragHandle_PointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+    void DragHandle_PointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+    };
+}
+
+namespace winrt::SamsungNotes::UI::Controls::factory_implementation
+{
+    struct FloatingToolbarBase : FloatingToolbarBaseT<FloatingToolbarBase, implementation::FloatingToolbarBase>
+    {
+    };
+}
+#include "pch.h"
+#include "FloatingToolbarBase.xaml.h"
+#if __has_include("FloatingToolbarBase.g.cpp")
+#include "FloatingToolbarBase.g.cpp"
+#endif
+
+#include "winrt/Microsoft.UI.Xaml.Input.h"
+#include "winrt/Microsoft.UI.Input.h"
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace Microsoft::UI::Xaml::Input;
+
+namespace winrt::SamsungNotes::UI::Controls::implementation
+{
+    int32_t FloatingToolbarBase::MyProperty()
+    {
+        return 0;
+    }
+
+    void FloatingToolbarBase::MyProperty(int32_t value)
+    {
+
+    }
+    FloatingToolbarBase::FloatingToolbarBase() {
+        InitializeComponent();
+        Canvas::SetLeft(FloatingController(), floatingToolbarVM.left);
+        Canvas::SetTop(FloatingController(), floatingToolbarVM.top);
+    }
+
+    void FloatingToolbarBase::DragHandle_PointerPressed(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        floatingToolbarVM.onPointerPressed(
+            point.Position(),
+            point.Properties().IsRightButtonPressed(),
+            point.Properties().IsMiddleButtonPressed());
+
+        auto handle = sender.as<UIElement>();
+        handle.CapturePointer(e.Pointer());
+    }
+
+    void FloatingToolbarBase::DragHandle_PointerMoved(
+        winrt::Windows::Foundation::IInspectable const&,
+        PointerRoutedEventArgs const& e)
+    {
+        if (!floatingToolbarVM.mTouchDown)
+            return;
+
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        floatingToolbarVM.onPointerMoved(
+            point.Position(),
+            RootCanvas().ActualWidth(),
+            RootCanvas().ActualHeight());
+
+        Canvas::SetLeft(FloatingController(), floatingToolbarVM.left);
+        Canvas::SetTop(FloatingController(), floatingToolbarVM.top);
+    }
+
+    void FloatingToolbarBase::DragHandle_PointerReleased(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        floatingToolbarVM.onPointerReleased();
+
+        auto handle = sender.as<UIElement>();
+        handle.ReleasePointerCapture(e.Pointer());
+    }
+    
+}
