@@ -1,7 +1,111 @@
+#include "pch.h"
+#include "EyedropperToolbar.xaml.h"
+#if __has_include("EyedropperToolbar.g.cpp")
+#include "EyedropperToolbar.g.cpp"
+#endif
+
+#include "winrt/Microsoft.UI.Xaml.Input.h"
+#include "winrt/Microsoft.UI.Input.h"
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
+using namespace Microsoft::UI::Xaml::Controls;
+using namespace Microsoft::UI::Xaml::Input;
+
+namespace winrt::SamsungNotes::UI::Controls::implementation
+{
+    int32_t EyedropperToolbar::MyProperty()
+    {
+        // Return the stored value instead of throwing an exception
+        return m_myProperty;
+    }
+
+    void EyedropperToolbar::MyProperty(int32_t value)
+    {
+        // Store the value
+        m_myProperty = value;
+    }
+
+    EyedropperToolbar::EyedropperToolbar() {
+        InitializeComponent();
+    }
+
+    void EyedropperToolbar::DragHandle_PointerPressed(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        eyedropperToolbarVM.onPointerPressed(
+            point.Position(),
+            point.Properties().IsRightButtonPressed(),
+            point.Properties().IsMiddleButtonPressed());
+
+        auto handle = sender.as<UIElement>();
+        handle.CapturePointer(e.Pointer());
+    }
+
+    void EyedropperToolbar::DragHandle_PointerMoved(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        if (!eyedropperToolbarVM.mTouchDown)
+            return;
+
+        auto point = e.GetCurrentPoint(RootCanvas());
+
+        eyedropperToolbarVM.onPointerMoved(
+            point.Position(),
+            RootCanvas().ActualWidth(),
+            RootCanvas().ActualHeight());
+
+        winrt::Microsoft::UI::Xaml::Controls::Canvas::SetLeft(FloatingController(), eyedropperToolbarVM.left);
+        winrt::Microsoft::UI::Xaml::Controls::Canvas::SetTop(FloatingController(), eyedropperToolbarVM.top);
+    }
+
+    void EyedropperToolbar::DragHandle_PointerReleased(
+        winrt::Windows::Foundation::IInspectable const& sender,
+        PointerRoutedEventArgs const& e)
+    {
+        eyedropperToolbarVM.onPointerReleased();
+
+        auto handle = sender.as<UIElement>();
+        handle.ReleasePointerCapture(e.Pointer());
+    }
+}
+#pragma once
+
+#include "EyedropperToolbar.g.h"
+#include "EyedropperToolbarViewModel.h"
+namespace winrt::SamsungNotes::UI::Controls::implementation
+{
+    struct EyedropperToolbar : EyedropperToolbarT<EyedropperToolbar>
+    {
+        EyedropperToolbar();
+       
+
+        EyedropperToolbarViewModel eyedropperToolbarVM;
+        void DragHandle_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+        void DragHandle_PointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+        void DragHandle_PointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
+        int32_t MyProperty();
+        void MyProperty(int32_t value);
+
+    private:
+        int32_t m_myProperty = 0;
+    
+    };
+}
+
+namespace winrt::SamsungNotes::UI::Controls::factory_implementation
+{
+    struct EyedropperToolbar : EyedropperToolbarT<EyedropperToolbar, implementation::EyedropperToolbar>
+    {
+    };
+}
 #pragma once
 #include <winrt/Windows.Foundation.h>
 
-struct FloatingToolbarViewModel
+struct EyedropperToolbarViewModel
 {
     bool mTouchDown{ false };
     bool isPointerPressed{ false };
@@ -9,8 +113,8 @@ struct FloatingToolbarViewModel
     double left{ 20 };
     double top{ 20 };
 
-    double width{ 120 };
-    double height{ 40 };
+    double width{ 185 };
+    double height{ 60 };
 
     winrt::Windows::Foundation::Point lastPoint;
 
@@ -60,36 +164,10 @@ struct FloatingToolbarViewModel
         mTouchDown = false;
     }
 
-};
-
-#pragma once
-
-#include "FloatingToolbarBase.g.h"
-#include "FloatingToolbarViewModel.h"
-namespace winrt::SamsungNotes::UI::Controls::implementation
-{
-struct FloatingToolbarBase : FloatingToolbarBaseT<FloatingToolbarBase>
-{
-    FloatingToolbarBase();
-    int32_t MyProperty();
-    void MyProperty(int32_t value);
-    FloatingToolbarViewModel floatingToolbarVM;
-    void DragHandle_PointerPressed(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-    void DragHandle_PointerReleased(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-    void DragHandle_PointerMoved(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& e);
-    };
-}
-
-namespace winrt::SamsungNotes::UI::Controls::factory_implementation
-{
-    struct FloatingToolbarBase : FloatingToolbarBaseT<FloatingToolbarBase, implementation::FloatingToolbarBase>
-    {
-    };
-}
-#include "pch.h"
-#include "FloatingToolbarBase.xaml.h"
-#if __has_include("FloatingToolbarBase.g.cpp")
-#include "FloatingToolbarBase.g.cpp"
+};#include "pch.h"
+#include "EyedropperToolbar.xaml.h"
+#if __has_include("EyedropperToolbar.g.cpp")
+#include "EyedropperToolbar.g.cpp"
 #endif
 
 #include "winrt/Microsoft.UI.Xaml.Input.h"
@@ -101,28 +179,29 @@ using namespace Microsoft::UI::Xaml::Input;
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    int32_t FloatingToolbarBase::MyProperty()
+    int32_t EyedropperToolbar::MyProperty()
     {
-        return 0;
+        // Return the stored value instead of throwing an exception
+        return m_myProperty;
     }
 
-    void FloatingToolbarBase::MyProperty(int32_t value)
+    void EyedropperToolbar::MyProperty(int32_t value)
     {
-
+        // Store the value
+        m_myProperty = value;
     }
-    FloatingToolbarBase::FloatingToolbarBase() {
+
+    EyedropperToolbar::EyedropperToolbar() {
         InitializeComponent();
-        Canvas::SetLeft(FloatingController(), floatingToolbarVM.left);
-        Canvas::SetTop(FloatingController(), floatingToolbarVM.top);
     }
 
-    void FloatingToolbarBase::DragHandle_PointerPressed(
+    void EyedropperToolbar::DragHandle_PointerPressed(
         winrt::Windows::Foundation::IInspectable const& sender,
         PointerRoutedEventArgs const& e)
     {
         auto point = e.GetCurrentPoint(RootCanvas());
 
-        floatingToolbarVM.onPointerPressed(
+        eyedropperToolbarVM.onPointerPressed(
             point.Position(),
             point.Properties().IsRightButtonPressed(),
             point.Properties().IsMiddleButtonPressed());
@@ -131,32 +210,31 @@ namespace winrt::SamsungNotes::UI::Controls::implementation
         handle.CapturePointer(e.Pointer());
     }
 
-    void FloatingToolbarBase::DragHandle_PointerMoved(
-        winrt::Windows::Foundation::IInspectable const&,
+    void EyedropperToolbar::DragHandle_PointerMoved(
+        winrt::Windows::Foundation::IInspectable const& sender,
         PointerRoutedEventArgs const& e)
     {
-        if (!floatingToolbarVM.mTouchDown)
+        if (!eyedropperToolbarVM.mTouchDown)
             return;
 
         auto point = e.GetCurrentPoint(RootCanvas());
 
-        floatingToolbarVM.onPointerMoved(
+        eyedropperToolbarVM.onPointerMoved(
             point.Position(),
             RootCanvas().ActualWidth(),
             RootCanvas().ActualHeight());
 
-        Canvas::SetLeft(FloatingController(), floatingToolbarVM.left);
-        Canvas::SetTop(FloatingController(), floatingToolbarVM.top);
+        winrt::Microsoft::UI::Xaml::Controls::Canvas::SetLeft(FloatingController(), eyedropperToolbarVM.left);
+        winrt::Microsoft::UI::Xaml::Controls::Canvas::SetTop(FloatingController(), eyedropperToolbarVM.top);
     }
 
-    void FloatingToolbarBase::DragHandle_PointerReleased(
+    void EyedropperToolbar::DragHandle_PointerReleased(
         winrt::Windows::Foundation::IInspectable const& sender,
         PointerRoutedEventArgs const& e)
     {
-        floatingToolbarVM.onPointerReleased();
+        eyedropperToolbarVM.onPointerReleased();
 
         auto handle = sender.as<UIElement>();
         handle.ReleasePointerCapture(e.Pointer());
     }
-    
 }
