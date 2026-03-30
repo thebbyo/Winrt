@@ -9,8 +9,8 @@
     mc:Ignorable="d"
     d:DesignHeight="40"
     d:DesignWidth="400">
-
     <UserControl.Resources>
+        <!-- FloatingToolbarButtonStyle -->
         <Style x:Key="FloatingToolbarButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
@@ -32,42 +32,34 @@
                                     <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
                                         <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames
-                                                Storyboard.TargetName="RootGrid"
-                                                Storyboard.TargetProperty="Background">
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="#20000000" />
                                             </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
                                         <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames
-                                                Storyboard.TargetName="RootGrid"
-                                                Storyboard.TargetProperty="Background">
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="#40000000" />
                                             </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames
-                                                Storyboard.TargetName="ContentPresenter"
-                                                Storyboard.TargetProperty="Foreground">
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="#FFCCCCCC" />
                                             </ObjectAnimationUsingKeyFrames>
                                         </Storyboard>
                                     </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
-
-                            <ContentPresenter
-                                x:Name="ContentPresenter"
-                                Content="{TemplateBinding Content}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                AutomationProperties.AccessibilityView="Raw" />
+                            <ContentPresenter x:Name="ContentPresenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
@@ -77,18 +69,16 @@
 
     <Grid>
         <Canvas x:Name="RootCanvas">
-            <Border
-                x:Name="FloatingController"
-                Height="50"
-                Canvas.Left="20"
-                Canvas.Top="20"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                BorderBrush="#4e4e4e"
-                BorderThickness="0.5"
-                Background="#fffcfcfc"
-                CornerRadius="25">
-
+            <Border x:Name="FloatingController"
+           Height="45"
+           Canvas.Left="20"
+           Canvas.Top="20"
+           HorizontalAlignment="Left"
+           VerticalAlignment="Top"
+           BorderBrush="#4e4e4e"
+           BorderThickness=".5"
+           Background="#fffcfcfc"
+           CornerRadius="25">
                 <StackPanel Orientation="Horizontal" Spacing="24" Margin="12,8">
                     <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
@@ -98,54 +88,54 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Grid Grid.Column="0"
-                              PointerPressed="DragHandle_PointerPressed"
-                              PointerMoved="DragHandle_PointerMoved"
-                              PointerReleased="DragHandle_PointerReleased">
-                            <Image
-                                x:Name="DragHandle"
-                                Source="/Assets/Images/Composer/Voice/Voice_Recording/ic_voice_floating_handler.svg"
-                                Height="40"
-                                Width="24"
-                                Margin="0,0,4,0"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch" />
-                        </Grid>
+                        <!-- Handle Image -->
+                        <Image x:Name="DragHandle"
+                   Grid.Column="0"
+                   Source="/D:/SamsungNotes/SamsungNotes/Assets/Images/Composer/Voice/Voice_Recording/ic_voice_floating_handler.svg"
+                   Height="40"
+                   Width="24"
+                   Margin="0,0,4,0"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"    
+                   PointerPressed="DragHandle_PointerPressed"
+                   PointerMoved="DragHandle_PointerMoved"
+                   PointerReleased="DragHandle_PointerReleased"
+                       />
 
-                        <Button
-                            Grid.Column="1"
-                            x:Name="Spoid"
-                            Style="{StaticResource FloatingToolbarButtonStyle}">
-                            <Path
-                                Height="20"
-                                Width="20"
-                                Stretch="Uniform"
-                                Stroke="Black"
-                                StrokeThickness="1.5"
-                                Data="M 9.55 8.363 L 4.753 13.161 C 4.746 13.168 4.74 13.174 4.734 13.181 C 4.611 13.319 4.515 13.415 4.43 13.499 C 4.054 13.878 3.912 14.053 3.327 15.4 C 3.225 15.636 3.276 15.911 3.458 16.093 L 3.908 16.543 C 4.089 16.724 4.365 16.775 4.6 16.673 C 5.946 16.088 6.123 15.947 6.5 15.569 C 6.585 15.485 6.681 15.389 6.82 15.266 C 6.826 15.26 6.833 15.254 6.84 15.248 L 11.636 10.45 M 8.306 7.304 L 12.693 11.697 M 11.97 10.833 C 11.97 10.833 11.922 9.38 13.333 8.825 C 13.333 8.825 14.943 8.525 15.897 7.618 C 15.921 7.594 15.945 7.57 15.969 7.547 C 16.879 6.599 17.063 5.138 15.989 4.063 L 15.937 4.011 C 14.862 2.937 13.401 3.12 12.454 4.031 C 12.429 4.055 12.406 4.08 12.382 4.104 C 11.476 5.057 11.175 6.667 11.175 6.667 C 10.62 8.078 9.168 8.03 9.168 8.03"/>
+                        <!-- Spoid Button -->
+                        <Button Grid.Column="1" 
+                        Name="Spoid"
+                        ToolTipService.ToolTip="Eyedropper Tool"
+                        Style="{StaticResource FloatingToolbarButtonStyle}">
+                            <Path Height="20"
+                      Width="20"
+                      Stretch="Uniform"
+                      Stroke="Black"
+                      StrokeThickness="1.5"
+                      Data="M 9.55 8.363 L 4.753 13.161 C 4.746 13.168 4.74 13.174 4.734 13.181 C 4.611 13.319 4.515 13.415 4.43 13.499 C 4.054 13.878 3.912 14.053 3.327 15.4 C 3.225 15.636 3.276 15.911 3.458 16.093 L 3.908 16.543 C 4.089 16.724 4.365 16.775 4.6 16.673 C 5.946 16.088 6.123 15.947 6.5 15.569 C 6.585 15.485 6.681 15.389 6.82 15.266 C 6.826 15.26 6.833 15.254 6.84 15.248 L 11.636 10.45 M 8.306 7.304 L 12.693 11.697 M 11.97 10.833 C 11.97 10.833 11.922 9.38 13.333 8.825 C 13.333 8.825 14.943 8.525 15.897 7.618 C 15.921 7.594 15.945 7.57 15.969 7.547 C 16.879 6.599 17.063 5.138 15.989 4.063 L 15.937 4.011 C 14.862 2.937 13.401 3.12 12.454 4.031 C 12.429 4.055 12.406 4.08 12.382 4.104 C 11.476 5.057 11.175 6.667 11.175 6.667 C 10.62 8.078 9.168 8.03 9.168 8.03"/>
                         </Button>
 
-                        <Border
-                            Grid.Column="2"
-                            x:Name="EyedropperColorHolder"
-                            Width="24"
-                            Height="24"
-                            Background="Red"
-                            BorderBrush="#4e4e4e"
-                            BorderThickness="0.8"
-                            CornerRadius="18"
-                            Margin="8,0"/>
+                        <!-- Color Display -->
+                        <Border Grid.Column="2" 
+                        x:Name="EyedropperColorHolder" 
+                        Width="24" 
+                        Height="24" 
+                        Background="green" 
+                        BorderBrush="#4e4e4e" 
+                        BorderThickness=".8" 
+                        CornerRadius="18" 
+                        Margin="8,0"/>
 
-                        <Button
-                            Grid.Column="3"
-                            x:Name="Remove"
-                            Style="{StaticResource FloatingToolbarButtonStyle}">
-                            <Path
-                                Height="20"
-                                Width="20"
-                                Stretch="Uniform"
-                                Fill="Black"
-                                Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                        <!-- Remove Button -->
+                        <Button Grid.Column="3" 
+                        Name="Remove"
+                        Style="{StaticResource FloatingToolbarButtonStyle}"
+                            PointerPressed="Remove_PointerPressed">
+                            <Path Height="20"
+                          Width="20"
+                          Stretch="Uniform"
+                          Fill="Black"
+                          Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
                         </Button>
                     </Grid>
                 </StackPanel>
