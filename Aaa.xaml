@@ -1,23 +1,22 @@
-#pragma once
+#include "pch.h"
+#include "KeyboardHelper.xaml.h"
 
-#include "KeyboardHelper.g.h"
-#include "KeyboardHelperViewModel.h"
+using namespace winrt;
+using namespace Microsoft::UI::Xaml;
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    struct KeyboardHelper :
-        KeyboardHelperT<KeyboardHelper>
+    KeyboardHelper::KeyboardHelper()
     {
-    private:
+        InitializeComponent();
 
-        SamsungNotes::UI::Controls::implementation::
-            KeyboardHelperViewModel m_viewModel;
+        DataContext(box_value(m_viewModel));
+    }
 
-    public:
-
-        KeyboardHelper();
-
-        SamsungNotes::UI::Controls::implementation::
-            KeyboardHelperViewModel ViewModel();
-    };
+    SamsungNotes::UI::Controls::implementation::
+        KeyboardHelperViewModel
+        KeyboardHelper::ViewModel()
+    {
+        return m_viewModel;
+    }
 }
