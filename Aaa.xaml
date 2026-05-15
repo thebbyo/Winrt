@@ -1,55 +1,61 @@
-#pragma once
+#include "pch.h"
+#include "KeyboardHelperViewModel.h"
 
-#include "KeyboardShortcut.h"
-
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Microsoft.UI.Xaml.Data.h>
+using namespace winrt;
+using namespace Windows::Foundation::Collections;
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    struct KeyboardHelperViewModel :
-        winrt::implements<
-        KeyboardHelperViewModel,
-        winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>
+    KeyboardHelperViewModel::KeyboardHelperViewModel()
     {
-    private:
+        m_noteTextEditShortcuts.Append(
+            box_value(
+                KeyboardShortcut(
+                    L"Copy",
+                    L"Ctrl",
+                    L"C")));
 
-        hstring m_keyboardHelperHeader =
-            L"Keyboard Shortcuts";
+        m_noteTextEditShortcuts.Append(
+            box_value(
+                KeyboardShortcut(
+                    L"Paste",
+                    L"Ctrl",
+                    L"V")));
 
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<IInspectable> m_noteTextEditShortcuts
-        {
-            winrt::single_threaded_observable_vector<IInspectable>()
-        };
+        m_noteViewPanelControlShortcuts.Append(
+            box_value(
+                KeyboardShortcut(
+                    L"Zoom In",
+                    L"Ctrl",
+                    L"+")));
+    }
 
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<IInspectable> m_noteViewPanelControlShortcuts
-        {
-            winrt::single_threaded_observable_vector<IInspectable>()
-        };
+    hstring KeyboardHelperViewModel::KeyboardHelperHeader()
+    {
+        return m_keyboardHelperHeader;
+    }
 
-    public:
+    IObservableVector<IInspectable>
+        KeyboardHelperViewModel::NoteTextEditShortcuts()
+    {
+        return m_noteTextEditShortcuts;
+    }
 
-        KeyboardHelperViewModel();
+    IObservableVector<IInspectable>
+        KeyboardHelperViewModel::NoteViewPanelControlShortcuts()
+    {
+        return m_noteViewPanelControlShortcuts;
+    }
 
-        hstring KeyboardHelperHeader();
+    event_token KeyboardHelperViewModel::PropertyChanged(
+        Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+    {
+        return m_propertyChanged.add(handler);
+    }
 
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<IInspectable>
-            NoteTextEditShortcuts();
-
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<IInspectable>
-            NoteViewPanelControlShortcuts();
-
-        winrt::event<
-            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler>
-            m_propertyChanged;
-
-        winrt::event_token PropertyChanged(
-            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
-
-        void PropertyChanged(winrt::event_token const& token);
-    };
+    void KeyboardHelperViewModel::PropertyChanged(
+        event_token const& token)
+    {
+        m_propertyChanged.remove(token);
+    }
 }
