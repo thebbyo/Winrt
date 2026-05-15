@@ -1,62 +1,55 @@
 #pragma once
 
+#include "KeyboardShortcut.h"
+
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    struct KeyboardShortcut : winrt::implements<
-        KeyboardShortcut,
+    struct KeyboardHelperViewModel :
+        winrt::implements<
+        KeyboardHelperViewModel,
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>
     {
     private:
-        hstring m_funcName;
-        hstring m_shortcutKey1;
-        hstring m_shortcutKey2;
-        hstring m_shortcutKey3;
-        hstring m_shortcutKey4;
+
+        hstring m_keyboardHelperHeader =
+            L"Keyboard Shortcuts";
+
+        winrt::Windows::Foundation::Collections::
+            IObservableVector<IInspectable> m_noteTextEditShortcuts
+        {
+            winrt::single_threaded_observable_vector<IInspectable>()
+        };
+
+        winrt::Windows::Foundation::Collections::
+            IObservableVector<IInspectable> m_noteViewPanelControlShortcuts
+        {
+            winrt::single_threaded_observable_vector<IInspectable>()
+        };
 
     public:
 
-        KeyboardShortcut() = default;
+        KeyboardHelperViewModel();
 
-        KeyboardShortcut(
-            hstring const& funcName,
-            hstring const& key1,
-            hstring const& key2 = L"",
-            hstring const& key3 = L"",
-            hstring const& key4 = L"")
-        {
-            m_funcName = funcName;
-            m_shortcutKey1 = key1;
-            m_shortcutKey2 = key2;
-            m_shortcutKey3 = key3;
-            m_shortcutKey4 = key4;
-        }
+        hstring KeyboardHelperHeader();
 
-        hstring FuncName() { return m_funcName; }
+        winrt::Windows::Foundation::Collections::
+            IObservableVector<IInspectable>
+            NoteTextEditShortcuts();
 
-        hstring ShortcutKey1() { return m_shortcutKey1; }
-
-        hstring ShortcutKey2() { return m_shortcutKey2; }
-
-        hstring ShortcutKey3() { return m_shortcutKey3; }
-
-        hstring ShortcutKey4() { return m_shortcutKey4; }
+        winrt::Windows::Foundation::Collections::
+            IObservableVector<IInspectable>
+            NoteViewPanelControlShortcuts();
 
         winrt::event<
             winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler>
             m_propertyChanged;
 
         winrt::event_token PropertyChanged(
-            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
-        {
-            return m_propertyChanged.add(handler);
-        }
+            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler);
 
-        void PropertyChanged(winrt::event_token const& token)
-        {
-            m_propertyChanged.remove(token);
-        }
+        void PropertyChanged(winrt::event_token const& token);
     };
 }
