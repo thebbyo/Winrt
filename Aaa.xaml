@@ -1,61 +1,23 @@
-#include "pch.h"
-#include "KeyboardHelperViewModel.h"
+#pragma once
 
-using namespace winrt;
-using namespace Windows::Foundation::Collections;
+#include "KeyboardHelper.g.h"
+#include "KeyboardHelperViewModel.h"
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    KeyboardHelperViewModel::KeyboardHelperViewModel()
+    struct KeyboardHelper :
+        KeyboardHelperT<KeyboardHelper>
     {
-        m_noteTextEditShortcuts.Append(
-            box_value(
-                KeyboardShortcut(
-                    L"Copy",
-                    L"Ctrl",
-                    L"C")));
+    private:
 
-        m_noteTextEditShortcuts.Append(
-            box_value(
-                KeyboardShortcut(
-                    L"Paste",
-                    L"Ctrl",
-                    L"V")));
+        SamsungNotes::UI::Controls::implementation::
+            KeyboardHelperViewModel m_viewModel;
 
-        m_noteViewPanelControlShortcuts.Append(
-            box_value(
-                KeyboardShortcut(
-                    L"Zoom In",
-                    L"Ctrl",
-                    L"+")));
-    }
+    public:
 
-    hstring KeyboardHelperViewModel::KeyboardHelperHeader()
-    {
-        return m_keyboardHelperHeader;
-    }
+        KeyboardHelper();
 
-    IObservableVector<IInspectable>
-        KeyboardHelperViewModel::NoteTextEditShortcuts()
-    {
-        return m_noteTextEditShortcuts;
-    }
-
-    IObservableVector<IInspectable>
-        KeyboardHelperViewModel::NoteViewPanelControlShortcuts()
-    {
-        return m_noteViewPanelControlShortcuts;
-    }
-
-    event_token KeyboardHelperViewModel::PropertyChanged(
-        Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
-    {
-        return m_propertyChanged.add(handler);
-    }
-
-    void KeyboardHelperViewModel::PropertyChanged(
-        event_token const& token)
-    {
-        m_propertyChanged.remove(token);
-    }
+        SamsungNotes::UI::Controls::implementation::
+            KeyboardHelperViewModel ViewModel();
+    };
 }
