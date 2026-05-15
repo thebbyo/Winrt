@@ -1,291 +1,62 @@
-<UserControl
-    x:Class="SamsungNotes.UI.Controls.KeyboardHelper"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="using:SamsungNotes.UI.Controls"
-    mc:Ignorable="d">
+#pragma once
 
-    <UserControl.Resources>
-        <Style x:Key="KeyboardTextBlockStyle"
-                TargetType="TextBlock">
-            <Setter Property="FontFamily"
-                    Value="Segoe UI" />
-            <Setter Property="FontSize"
-                    Value="13" />
-            <Setter Property="FontWeight"
-                    Value="SemiBold" />
-            <Setter Property="Foreground"
-                    Value="#010102" />
-            <Setter Property="VerticalAlignment"
-                    Value="Center" />
-            <Setter Property="HorizontalAlignment"
-                    Value="Center" />
-            <Setter Property="TextWrapping"
-                    Value="WrapWholeWords" />
-            <Setter Property="IsTextScaleFactorEnabled"
-                    Value="False"/>
-            <Setter Property="TextTrimming"
-                    Value="CharacterEllipsis"/>
-        </Style>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Microsoft.UI.Xaml.Data.h>
 
-        <CollectionViewSource x:Name="NoteTextEditKeyboardHelperSource" Source="{Binding NoteTextEditShortcuts}" IsSourceGrouped="true" />
-        <CollectionViewSource x:Name="ViewPanelControlKeyboardHelperSource" Source="{Binding NoteViewPanelControlShortcuts}" IsSourceGrouped="true" />
-        
-        <DataTemplate x:Key="KeyboardHelperTemplate" x:DataType="local:KeyboardShortcut">
-            <Grid Margin="0,0,10,0"
-                  MinHeight="43">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Text="{x:Bind FuncName}" 
-                           HorizontalTextAlignment="Left" 
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"
-                           FontSize="14"/>
-                
-                <Grid Grid.Column="1" 
-                      HorizontalAlignment="Right">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <Grid x:Name="KeyboardShortcutKeyGrid1"
-                          MinWidth="32"
-                          Height="32"
-                          Background="#EEEEF0"
-                          CornerRadius="8"
-                          Padding="5,0,5,0"
-                          Visibility="{Binding ShortcutKey1, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock  Text="{x:Bind ShortcutKey1, Mode=OneTime}"
-                                    Style="{ThemeResource KeyboardTextBlockStyle}"/>
-                    </Grid>
+namespace winrt::SamsungNotes::UI::Controls::implementation
+{
+    struct KeyboardShortcut : winrt::implements<
+        KeyboardShortcut,
+        winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>
+    {
+    private:
+        hstring m_funcName;
+        hstring m_shortcutKey1;
+        hstring m_shortcutKey2;
+        hstring m_shortcutKey3;
+        hstring m_shortcutKey4;
 
-                    <Grid x:Name="KeyboardShortcutKeyGrid2"
-                          Grid.Column="1"
-                          MinWidth="32"
-                          Height="32"
-                          Background="#EEEEF0"
-                          CornerRadius="8"
-                          Padding="5,0,5,0"
-                          Margin="10,0,0,0"
-                          Visibility="{Binding ShortcutKey2, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock  Text="{x:Bind ShortcutKey2, Mode=OneTime}"
-                                    Style="{ThemeResource KeyboardTextBlockStyle}"/>
-                    </Grid>
+    public:
 
-                    <Grid x:Name="KeyboardShortcutKeyGrid3"
-                          Grid.Column="2"
-                          MinWidth="32"
-                          Height="32"
-                          Background="#EEEEF0"
-                          CornerRadius="8"
-                          Padding="5,0,5,0"
-                          Margin="10,0,0,0"
-                          Visibility="{Binding ShortcutKey3, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock  Text="{x:Bind ShortcutKey3, Mode=OneTime}"
-                                    Style="{ThemeResource KeyboardTextBlockStyle}"/>
-                    </Grid>
+        KeyboardShortcut() = default;
 
-                    <Grid x:Name="KeyboardShortcutKeyGrid4"
-                          Grid.Column="3"
-                          MinWidth="32"
-                          Height="32"
-                          Background="#EEEEF0"
-                          CornerRadius="8"
-                          Padding="5,0,5,0"
-                          Margin="10,0,0,0"
-                          Visibility="{Binding ShortcutKey4, Converter={StaticResource NullToVisibilityConverter}}">
-                        <TextBlock  Text="{x:Bind ShortcutKey4, Mode=OneTime}"
-                                    Style="{ThemeResource KeyboardTextBlockStyle}"/>
-                    </Grid>
-                </Grid>
-                
-            </Grid>
-        </DataTemplate>
+        KeyboardShortcut(
+            hstring const& funcName,
+            hstring const& key1,
+            hstring const& key2 = L"",
+            hstring const& key3 = L"",
+            hstring const& key4 = L"")
+        {
+            m_funcName = funcName;
+            m_shortcutKey1 = key1;
+            m_shortcutKey2 = key2;
+            m_shortcutKey3 = key3;
+            m_shortcutKey4 = key4;
+        }
 
-        <DataTemplate x:Key="KeyboardHelperGroupHeaderTemplate">
-            <Grid x:Name="ShortcutTypeGrid"
-                  Margin="0,12,20,5.5"
-                  MinHeight="35"
-                  Visibility="{Binding Key, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock x:Name="ShortcutType"
-                           Style="{StaticResource SegoeUINormalTextStyle}"
-                           Text="{Binding Key}" 
-                           Margin="0,0,8,5"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Left"
-                           Foreground="{ThemeResource SortButtonColor}" />
-                
-                <Line StrokeDashArray="1 4"
-                      StrokeDashCap="Round"
-                      Grid.Column="1"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Stretch"
-                      Stroke="{ThemeResource SeperatorLineColorBrush}"
-                      X1="0"
-                      X2="300"   
-                      StrokeThickness="1.2" />
-                
-            </Grid>
-        </DataTemplate>
+        hstring FuncName() { return m_funcName; }
 
-        <Style x:Key="KeyboardHelperListViewItemStyle" TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemExpanded}">
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="UseSystemFocusVisuals" Value="False" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="Padding" Value="0,0,10,0" />
-        </Style>
+        hstring ShortcutKey1() { return m_shortcutKey1; }
 
-        <Style x:Key="KeyboardHelperGroupHeaderContainerStyle" TargetType="ListViewHeaderItem">
-            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-            <Setter Property="FontSize" Value="{ThemeResource ListViewHeaderItemThemeFontSize}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Margin" Value="0" />
-            <Setter Property="Padding" Value="12,8,12,0" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="0" />
-            <Setter Property="UseSystemFocusVisuals" Value="False" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListViewHeaderItem">
-                        <ContentPresenter x:Name="ContentPresenter"
-                                          Grid.Row="1"
-                                          Background="{TemplateBinding Background}"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          ContentTransitions="{TemplateBinding ContentTransitions}"
-                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+        hstring ShortcutKey2() { return m_shortcutKey2; }
 
-    <Grid x:Name="KeyboardHelperGrid" CornerRadius="16"
-          MaxWidth="960"
-          MaxHeight="604"
-          Margin="32"
-          x:Load="False"
-          Background="{ThemeResource SaveAsDialogBackgroundThemeColor}"
-          HighContrastAdjustment="None"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center"
-          PreviewKeyDown="KeyboardHelperGrid_PreviewKeyDown">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState x:Name="NarrowLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="0"/>
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="MovableKeyboardHelperList.Grid.Column"
-                                            Value="0"/>
-                        <Setter Target="MovableKeyboardHelperList.Grid.Row"
-                                            Value="1"/>
-                        <Setter Target="MovableKeyboardHelperList.Margin"
-                                            Value="0"/>
-                        <Setter Target="KeyboardShortcutHelperGrid.ColumnDefinitions[1].Width"
-                                Value="Auto"/>
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="WideLayout">
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="900"/>
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="MovableKeyboardHelperList.Grid.Column"
-                                            Value="1"/>
-                        <Setter Target="MovableKeyboardHelperList.Grid.Row"
-                                            Value="0"/>
-                        <Setter Target="MovableKeyboardHelperList.Margin"
-                                            Value="10,0,0,0"/>
-                        <Setter Target="KeyboardShortcutHelperGrid.ColumnDefinitions[1].Width"
-                                Value="*"/>
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        hstring ShortcutKey3() { return m_shortcutKey3; }
 
-        <Grid MinHeight="50">
-            <TextBlock VerticalAlignment="Center"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Margin="22,24,24,14"
-                       Foreground="{ThemeResource SortByTitleThemeColor}"
-                       TextWrapping="WrapWholeWords"
-                       Text="{Binding KeyboardHelperHeader, Mode=OneWay}"/>
-        </Grid>
+        hstring ShortcutKey4() { return m_shortcutKey4; }
 
-        <ScrollViewer Grid.Row="1"
-                      MinWidth="300"
-                      MinHeight="300"
-                      Margin="22,0,22,12">
-            <Grid x:Name="KeyboardShortcutHelperGrid">
+        winrt::event<
+            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler>
+            m_propertyChanged;
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        winrt::event_token PropertyChanged(
+            winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventHandler const& handler)
+        {
+            return m_propertyChanged.add(handler);
+        }
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <ListView x:Name="NoteTextKeyboardHelperList"
-                              SelectionMode="None"
-                              IsTabStop="False"
-                              ScrollViewer.HorizontalScrollMode="Disabled"
-                              ScrollViewer.VerticalScrollMode="Disabled"
-                              ItemsSource="{Binding Source={StaticResource NoteTextEditKeyboardHelperSource}}"
-                              ItemTemplate="{StaticResource KeyboardHelperTemplate}"
-                              ItemContainerStyle="{StaticResource KeyboardHelperListViewItemStyle}">
-                    <ListView.GroupStyle>
-                        <GroupStyle HeaderTemplate="{StaticResource KeyboardHelperGroupHeaderTemplate}"
-                                        HeaderContainerStyle="{StaticResource KeyboardHelperGroupHeaderContainerStyle}">
-                        </GroupStyle>
-                    </ListView.GroupStyle>
-                </ListView>
-                <!--The following grid added to ajdust view using visual state-->
-                <Grid x:Name="MovableKeyboardHelperList"
-                          Grid.Column="1"
-                          Grid.Row="0">
-                    <ListView x:Name="ViewPanelControlKeyboardHelperList"
-                                  SelectionMode="None"
-                                  IsTabStop="False"
-                                  ScrollViewer.HorizontalScrollMode="Disabled"
-                                  ScrollViewer.VerticalScrollMode="Disabled"
-                                  ItemsSource="{Binding Source={StaticResource ViewPanelControlKeyboardHelperSource}}"
-                                  ItemTemplate="{StaticResource KeyboardHelperTemplate}"
-                                  ItemContainerStyle="{StaticResource KeyboardHelperListViewItemStyle}">
-                        <ListView.GroupStyle>
-                            <GroupStyle HeaderTemplate="{StaticResource KeyboardHelperGroupHeaderTemplate}"
-                                            HeaderContainerStyle="{StaticResource KeyboardHelperGroupHeaderContainerStyle}">
-                            </GroupStyle>
-                        </ListView.GroupStyle>
-                    </ListView>
-                </Grid>
-            </Grid>
-        </ScrollViewer>
-    </Grid>
-
-</UserControl>
+        void PropertyChanged(winrt::event_token const& token)
+        {
+            m_propertyChanged.remove(token);
+        }
+    };
+}
