@@ -1,130 +1,40 @@
-#pragma once
-#include "KeyboardShortcut.g.h"
-
-namespace winrt::SamsungNotes::UI::Controls::implementation
+namespace SamsungNotes.UI.Controls
 {
-    struct KeyboardShortcut : KeyboardShortcutT<KeyboardShortcut>
+    enum KeyboardShortcutHelperCategory
     {
-    private:
-        hstring m_funcName{};
-        hstring m_shortcutKey1{};
-        hstring m_shortcutKey2{};
-        hstring m_shortcutKey3{};
-        hstring m_shortcutKey4{};
-        KeyboardShortcutHelperCategory m_helperCategory{};
-
-    public:
-        KeyboardShortcut() = default;
-        
-        KeyboardShortcut(hstring const& funcName, 
-                        hstring const& shortcutKey1,
-                        hstring const& shortcutKey2,
-                        hstring const& shortcutKey3,
-                        hstring const& shortcutKey4);
-
-        hstring FuncName();
-        void FuncName(hstring const& value);
-        
-        hstring ShortcutKey1();
-        void ShortcutKey1(hstring const& value);
-        
-        hstring ShortcutKey2();
-        void ShortcutKey2(hstring const& value);
-        
-        hstring ShortcutKey3();
-        void ShortcutKey3(hstring const& value);
-        
-        hstring ShortcutKey4();
-        void ShortcutKey4(hstring const& value);
-        
-        KeyboardShortcutHelperCategory HelperCategory();
-        void HelperCategory(KeyboardShortcutHelperCategory const& value);
+        General,
+        NoteEditShortcut,
+        TextEditShortcut,
+        ViewControlShortcut,
+        PanelControlShortcut
     };
-}
 
-namespace winrt::SamsungNotes::UI::Controls::factory_implementation
-{
-    struct KeyboardShortcut : KeyboardShortcutT<KeyboardShortcut, implementation::KeyboardShortcut>
+    runtimeclass KeyboardShortcut
     {
+        KeyboardShortcut(
+            String funcName,
+            String shortcutKey1,
+            String shortcutKey2,
+            String shortcutKey3,
+            String shortcutKey4);
+        String FuncName{ get; };
+        String ShortcutKey1{ get; };
+        String ShortcutKey2{ get; };
+        String ShortcutKey3{ get; };
+        String ShortcutKey4{ get; };
+        KeyboardShortcutHelperCategory HelperCategory;
     };
-}
-#include "pch.h"
-#include "KeyboardShortcut.h"
-#include "KeyboardShortcut.g.cpp"
-
-namespace winrt::SamsungNotes::UI::Controls::implementation
-{
-    KeyboardShortcut::KeyboardShortcut(
-        hstring const& funcName,
-        hstring const& shortcutKey1,
-        hstring const& shortcutKey2,
-        hstring const& shortcutKey3,
-        hstring const& shortcutKey4)
-        : m_funcName(funcName)
-        , m_shortcutKey1(shortcutKey1)
-        , m_shortcutKey2(shortcutKey2)
-        , m_shortcutKey3(shortcutKey3)
-        , m_shortcutKey4(shortcutKey4)
-    {
-    }
-
-    hstring KeyboardShortcut::FuncName()
-    {
-        return m_funcName;
-    }
-
-    void KeyboardShortcut::FuncName(hstring const& value)
-    {
-        m_funcName = value;
-    }
-
-    hstring KeyboardShortcut::ShortcutKey1()
-    {
-        return m_shortcutKey1;
-    }
-
-    void KeyboardShortcut::ShortcutKey1(hstring const& value)
-    {
-        m_shortcutKey1 = value;
-    }
-
-    hstring KeyboardShortcut::ShortcutKey2()
-    {
-        return m_shortcutKey2;
-    }
-
-    void KeyboardShortcut::ShortcutKey2(hstring const& value)
-    {
-        m_shortcutKey2 = value;
-    }
-
-    hstring KeyboardShortcut::ShortcutKey3()
-    {
-        return m_shortcutKey3;
-    }
-
-    void KeyboardShortcut::ShortcutKey3(hstring const& value)
-    {
-        m_shortcutKey3 = value;
-    }
-
-    hstring KeyboardShortcut::ShortcutKey4()
-    {
-        return m_shortcutKey4;
-    }
-
-    void KeyboardShortcut::ShortcutKey4(hstring const& value)
-    {
-        m_shortcutKey4 = value;
-    }
     
-    KeyboardShortcutHelperCategory KeyboardShortcut::HelperCategory()
+    [default_interface]
+    runtimeclass GroupInfosList
     {
-        return m_helperCategory;
-    }
-    
-    void KeyboardShortcut::HelperCategory(KeyboardShortcutHelperCategory const& value)
-    {
-        m_helperCategory = value;
-    }
+        GroupInfosList();
+        String Key;
+        Windows.Foundation.Collections.IVector<KeyboardShortcut> Items{ get; };
+        
+        void Add(KeyboardShortcut item);
+        void RemoveAt(UInt32 index);
+        void Clear();
+        UInt32 Size();
+    };
 }
