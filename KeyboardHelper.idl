@@ -1,0 +1,9 @@
+namespace SamsungNotes.UI.Controls
+{
+    [default_interface]
+    runtimeclass KeyboardHelper :
+        Microsoft.UI.Xaml.Controls.UserControl
+    {
+        KeyboardHelper();
+    };
+}

@@ -1,0 +1,9 @@
+namespace SamsungNotes.UI.Controls
+{
+    [default_interface]
+    runtimeclass EyedropperToolbar : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        EyedropperToolbar();
+      
+    }
+}
