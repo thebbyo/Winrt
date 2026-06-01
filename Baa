@@ -1,300 +1,394 @@
-#include "pch.h"
-#include "OtherPage.xaml.h"
-#if __has_include("OtherPage.g.cpp")
-#include "OtherPage.g.cpp"
-#endif
+using SamsungNotes.Dialog.Model;
+using SamsungNotesCommon.Extentions;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Windows.ApplicationModel.Resources;
 
-#include "BookStoreState.h"
-#include "PdfState.h"
-
-#include <string>
-#include <fstream>
-#include <filesystem>
-
-#include <winrt/Windows.Data.Xml.Dom.h>
-#include <winrt/Windows.UI.Notifications.h>
-#include <winrt/Windows.Storage.Pickers.h>
-#include <winrt/Windows.Storage.h>
-
-using namespace winrt;
-using namespace Microsoft::UI::Xaml;
-using namespace winrt::Windows::Storage::Pickers;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
-namespace winrt::Episode4::implementation
+namespace SamsungNotes.Dialog.ViewModel
 {
-    void ShowToast(winrt::hstring const& message)
+    internal class KeyboardHelperViewModel
     {
-        using namespace winrt::Windows::Data::Xml::Dom;
-        using namespace winrt::Windows::UI::Notifications;
-
-        XmlDocument toastXml;
-
-        std::wstring xml =
-            L"<toast>"
-            L"<visual>"
-            L"<binding template='ToastGeneric'>"
-            L"<text>Bookstore</text>"
-            L"<text>" + std::wstring(message.c_str()) + L"</text>"
-            L"</binding>"
-            L"</visual>"
-            L"</toast>";
-
-        toastXml.LoadXml(xml);
-        ToastNotification toast(toastXml);
-        ToastNotificationManager::CreateToastNotifier().Show(toast);
-    }
-
-    void OtherPage::Page_Loaded(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        ::Episode4::BookStoreState::Seed();
-        RefreshBookList();
-        RefreshSelectedBookDetails();
-        pdfNameText().Text(::Episode4::PdfState::SelectedPdfName());
-    }
-
-    void OtherPage::RefreshBookList()
-    {
-        bookList().Items().Clear();
-
-        auto const& books = ::Episode4::BookStoreState::Books();
-
-        for (auto const& book : books)
+        private ObservableCollection<GroupInfosList> _noteTextEditShortcuts = new ObservableCollection<GroupInfosList>();
+        public ObservableCollection<GroupInfosList> NoteTextEditShortcuts
         {
-            std::wstring line = book.Title.c_str();
-            line += L" | ";
-            line += book.Author.c_str();
-            line += L" | Stock: ";
-            line += winrt::to_hstring(book.Stock).c_str();
+            get => _noteTextEditShortcuts;
+            set => value = _noteTextEditShortcuts;
+        }
 
-            if (book.Stock < 3)
+        private ObservableCollection<GroupInfosList> _noteViewPanelControlShortcuts = new ObservableCollection<GroupInfosList>();
+        public ObservableCollection<GroupInfosList> NoteViewPanelControlShortcuts
+        {
+            get => _noteViewPanelControlShortcuts;
+            set => value = _noteViewPanelControlShortcuts;
+        }
+
+        private string keyboardHelperHeader = ResourceLoader.GetForViewIndependentUse().GetString("dream_samsung_notes_keyboard_shortcuts_header");
+        public string KeyboardHelperHeader
+        {
+            get { return keyboardHelperHeader; }
+        }
+
+        private Dictionary<KeyboardShortcutHelperCategory, string> KeyboardShortcutHelperCategoryText = new Dictionary<KeyboardShortcutHelperCategory, string>();
+
+        public KeyboardHelperViewModel()
+        {
+            Initialize();
+        }
+
+        public void Initialize()
+        {
+            KeyboardShortcutHelperCategoryText[KeyboardShortcutHelperCategory.General] = null;
+            KeyboardShortcutHelperCategoryText[KeyboardShortcutHelperCategory.NoteEditShortcut] = ResourceLoader.GetForViewIndependentUse().GetString("dream_editing_shortcuts_header");
+            KeyboardShortcutHelperCategoryText[KeyboardShortcutHelperCategory.TextEditShortcut] = ResourceLoader.GetForViewIndependentUse().GetString("dream_text_shortcuts_header");
+            KeyboardShortcutHelperCategoryText[KeyboardShortcutHelperCategory.ViewControlShortcut] = ResourceLoader.GetForViewIndependentUse().GetString("dream_editing_shortcuts_header");
+            KeyboardShortcutHelperCategoryText[KeyboardShortcutHelperCategory.PanelControlShortcut] = ResourceLoader.GetForViewIndependentUse().GetString("dream_settings_shortcuts_header");
+
+            var NoteTextEditKeyboardShortcuts = GetNoteTextEditKeyboardShortcuts();
+            var NoteViewPanelControlKeyboardShortcuts = GetNoteViewPanelControlKeyboardShortcuts();
+            GeneratePanierByStatusGroup(NoteTextEditKeyboardShortcuts, ShortcutListType.NoteTextEditKeyboardShortcuts);
+            GeneratePanierByStatusGroup(NoteViewPanelControlKeyboardShortcuts, ShortcutListType.NoteViewPanelControlKeyboardShortcuts);
+        }
+
+        public List<KeyboardShortcut> GetNoteTextEditKeyboardShortcuts()
+        {
+            return new List<KeyboardShortcut>()
             {
-                line += L" | Low Stock Warning";
-            }
-
-            bookList().Items().Append(box_value(winrt::hstring(line)));
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_select_next_button_opt"),
+                    ShortcutKey1 = "Tab",
+                    ShortcutKey2 = null,
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.General
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_select_previous_button_opt"),
+                    ShortcutKey1 = "Shift",
+                    ShortcutKey2 = "Tab",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.General
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_add_page_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "N",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.NoteEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_create_new_note_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "N",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.NoteEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_create_text_box_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "T",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.NoteEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("new_text_strikethrough"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "/",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_bold"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "B",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_italic"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "I",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_underline"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "U",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_align_center_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "E",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_align_left_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "L",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_align_right_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "R",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("ss_numbered_list_tbopt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "7",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_bullets"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "8",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_todo"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "C",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_decrease_font_size_tbopt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "[",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_increase_font_size_tbopt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "]",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_indent"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "M",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("composer_outdent"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "M",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.TextEditShortcut
+                }
+            };
         }
 
-        statusText().Text(L"Total Books : " + winrt::to_hstring(::Episode4::TotalTitles()));
-    }
-
-    void OtherPage::RefreshSelectedBookDetails()
-    {
-        int32_t index = bookList().SelectedIndex();
-
-        if (index < 0 || index >= static_cast<int32_t>(::Episode4::BookStoreState::Books().size()))
+        public List<KeyboardShortcut> GetNoteViewPanelControlKeyboardShortcuts()
         {
-            detailsText().Text(L"Select a book from the list");
-            return;
-        }
-
-        auto const& book = ::Episode4::BookStoreState::Books()[index];
-
-        std::wstring details = L"Title: ";
-        details += book.Title.c_str();
-        details += L"\nAuthor: ";
-        details += book.Author.c_str();
-        details += L"\nCategory: ";
-        details += book.Category.c_str();
-        details += L"\nPrice: $";
-        details += winrt::to_hstring(book.Price).c_str();
-        details += L"\nStock: ";
-        details += winrt::to_hstring(book.Stock).c_str();
-
-        detailsText().Text(winrt::hstring(details));
-    }
-
-    void OtherPage::addBookButton_Click(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        auto title = titleTextBox().Text();
-        auto author = authorTextBox().Text();
-        auto category = categoryTextBox().Text();
-        auto price = priceTextBox().Text();
-        auto stock = stockTextBox().Text();
-
-        if (title.empty() || author.empty() || category.empty() || price.empty() || stock.empty())
-        {
-            statusText().Text(L"Please fill all the box.. ");
-            return;
-        }
-
-        try
-        {
-            std::wstring priceString = price.c_str();
-            std::wstring stockString = stock.c_str();
-
-            double priceValue = std::stod(priceString);
-            int32_t stockValue = std::stoi(stockString);
-
-            ::Episode4::BookStoreState::Books().push_back({
-                title, author, category, priceValue, stockValue
-            });
-
-            titleTextBox().Text(L"");
-            authorTextBox().Text(L"");
-            categoryTextBox().Text(L"");
-            priceTextBox().Text(L"");
-            stockTextBox().Text(L"");
-
-            statusText().Text(L"book added");
-            RefreshBookList();
-            detailsText().Text(L"Select a book to add in list");
-        }
-        catch (...)
-        {
-            statusText().Text(L"Invalid price or stock");
-        }
-    }
-
-    void OtherPage::deleteSelectionButton_Click(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        int32_t index = bookList().SelectedIndex();
-
-        if (index < 0 || index >= static_cast<int32_t>(::Episode4::BookStoreState::Books().size()))
-        {
-            statusText().Text(L"select a book");
-            return;
-        }
-
-        auto& books = ::Episode4::BookStoreState::Books();
-        books.erase(books.begin() + index);
-
-        statusText().Text(L"Selected Book deleted");
-        RefreshBookList();
-        detailsText().Text(L"Select a book from the list");
-    }
-
-    void OtherPage::bookList_SelectionChanged(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&)
-    {
-        RefreshSelectedBookDetails();
-    }
-
-    void OtherPage::searchBoxTExtChanged(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::Controls::TextChangedEventArgs const&)
-    {
-        auto query = winrt::to_string(searchBox().Text());
-
-        bookList().Items().Clear();
-
-        auto const& books = ::Episode4::BookStoreState::Books();
-
-        for (auto const& book : books)
-        {
-            std::string title = winrt::to_string(book.Title);
-            std::string author = winrt::to_string(book.Author);
-
-            if (title.find(query) != std::string::npos || author.find(query) != std::string::npos)
+            return new List<KeyboardShortcut>()
             {
-                std::wstring line = book.Title.c_str();
-                line += L" | ";
-                line += book.Author.c_str();
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("base_zoom_in"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "+",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("base_zoom_out"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "-",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_zoom_in_out_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Mouse wheel scroll",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = string.Format(ResourceLoader.GetForViewIndependentUse().GetString("dream_ps_lock_tbopt").ToCsFormat(), 
+                               ResourceLoader.GetForViewIndependentUse().GetString("ts_zoom_mbody")),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Alt",
+                    ShortcutKey3 = "L",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_switch_to_editing_mode_tmbody"),
+                    ShortcutKey1 = "Enter",
+                    ShortcutKey2 = null,
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_read_only_mode_on_off_opt"),
+                    ShortcutKey1 = "Alt",
+                    ShortcutKey2 = "Enter",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_full_screen_view_on_off_opt"),
+                    ShortcutKey1 = "Alt",
+                    ShortcutKey2 = "F",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.ViewControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_show_pen_settings_opt_abb"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "T",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_open_close_page_settings_opt"),
+                    ShortcutKey1 = "Alt",
+                    ShortcutKey2 = "P",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_expand_shrink_audio_controls_opt"),
+                    ShortcutKey1 = "Alt",
+                    ShortcutKey2 = "R",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_play_pause_audio_file_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "'",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_jump_back_10_seconds_in_audio_file_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = ",",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                },
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_jump_forward_back_10_seconds_in_audio_file_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = ".",
+                    ShortcutKey3 = null,
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                }
+                ,
+                new KeyboardShortcut
+                {
+                    FuncName = ResourceLoader.GetForViewIndependentUse().GetString("dream_print_note_opt"),
+                    ShortcutKey1 = "Ctrl",
+                    ShortcutKey2 = "Shift",
+                    ShortcutKey3 = "P",
+                    ShortcutKey4 = null,
+                    helperCategory = KeyboardShortcutHelperCategory.PanelControlShortcut
+                }
+            };
+        }
 
-                bookList().Items().Append(box_value(winrt::hstring(line)));
+        public void GeneratePanierByStatusGroup(List<KeyboardShortcut> shortcuts, ShortcutListType type)
+        {
+            var query = from item in shortcuts
+                        group item by item.helperCategory into g
+                        orderby g.Key
+                        select new { GroupName = g.Key, Items = g };
+
+            foreach (var g in query)
+            {
+                GroupInfosList info = new GroupInfosList();
+                info.Key = KeyboardShortcutHelperCategoryText[g.GroupName];
+
+                foreach (var item in g.Items)
+                {
+                    info.Add(item);
+                }
+
+                if (type == ShortcutListType.NoteTextEditKeyboardShortcuts)
+                {
+                    NoteTextEditShortcuts.Add(info);
+                }
+                else if (type == ShortcutListType.NoteViewPanelControlKeyboardShortcuts)
+                {
+                    NoteViewPanelControlShortcuts.Add(info);
+                }
             }
-        }
-    }
-
-    void OtherPage::exportButtonClick(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        std::ofstream file("books.csv");
-        auto const& books = ::Episode4::BookStoreState::Books();
-
-        for (auto const& b : books)
-        {
-            file << winrt::to_string(b.Title) << ","
-                 << winrt::to_string(b.Author) << ","
-                 << winrt::to_string(b.Category) << ","
-                 << b.Price << ","
-                 << b.Stock << "\n";
-        }
-
-        file.close();
-        statusText().Text(L"Books exported successfully");
-        ShowToast(L"Inventory exported successfully!");
-    }
-
-    winrt::Windows::Foundation::IAsyncAction OtherPage::selectButtonClick(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        FileOpenPicker picker;
-        picker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
-        picker.CommitButtonText(L"Open Pdf");
-        picker.FileTypeFilter().Append(L".pdf");
-
-        auto result = co_await picker.PickSingleFileAsync();
-
-        if (!result)
-        {
-            pdfStatusText().Text(L"PDF selection canceled");
-            co_return;
-        }
-
-        ::Episode4::PdfState::SelectedPdfPath() = result.Path();
-        ::Episode4::PdfState::SelectedPdfName() = result.Name();
-
-        pdfNameText().Text(::Episode4::PdfState::SelectedPdfName());
-        pdfStatusText().Text(L"PDF selected successfully");
-    }
-
-    winrt::Windows::Foundation::IAsyncAction OtherPage::downloadButtonClick(
-        winrt::Windows::Foundation::IInspectable const&,
-        winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
-    {
-        auto sourcePath = ::Episode4::PdfState::SelectedPdfPath();
-
-        if (sourcePath.empty())
-        {
-            pdfStatusText().Text(L"Please add a pdf first");
-            co_return;
-        }
-
-        FileSavePicker savePicker;
-        savePicker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
-        savePicker.SuggestedFileName(::Episode4::PdfState::SelectedPdfName());
-        savePicker.CommitButtonText(L"Download PDF");
-        savePicker.DefaultFileExtension(L".pdf");
-
-        savePicker.FileTypeChoices().Insert(
-            L"PDF Document",
-            winrt::single_threaded_vector<winrt::hstring>({ L".pdf" })
-        );
-
-        auto saveResult = co_await savePicker.PickSaveFileAsync();
-
-        if (!saveResult)
-        {
-            pdfStatusText().Text(L"Download cancelled.");
-            co_return;
-        }
-
-        try
-        {
-            std::filesystem::copy_file(
-                std::filesystem::path(winrt::to_string(sourcePath)),
-                std::filesystem::path(winrt::to_string(saveResult.Path())),
-                std::filesystem::copy_options::overwrite_existing
-            );
-
-            pdfStatusText().Text(L"PDF downloaded successfully.");
-            ShowToast(L"PDF downloaded successfully!");
-        }
-        catch (...)
-        {
-            pdfStatusText().Text(L"Failed to download PDF.");
         }
     }
 }
