@@ -15,9 +15,9 @@ namespace winrt::SamsungNotes::UI::Controls::implementation
 
         hstring Key();
         void Key(hstring const& value);
-        
+
         Windows::Foundation::Collections::IVector<winrt::SamsungNotes::UI::Controls::KeyboardShortcut> Items();
-        
+
         void Add(winrt::SamsungNotes::UI::Controls::KeyboardShortcut const& item);
         void RemoveAt(uint32_t index);
         void Clear();

@@ -24,17 +24,18 @@ namespace SamsungNotes.UI.Controls
         String ShortcutKey4{ get; };
         KeyboardShortcutHelperCategory HelperCategory;
     };
-    
+
     [default_interface]
     runtimeclass GroupInfosList
     {
         GroupInfosList();
         String Key;
         Windows.Foundation.Collections.IVector<KeyboardShortcut> Items{ get; };
-        
+
         void Add(KeyboardShortcut item);
         void RemoveAt(UInt32 index);
         void Clear();
         UInt32 Size();
+
     };
 }
