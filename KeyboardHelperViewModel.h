@@ -1,39 +1,35 @@
 #pragma once
-#include <winrt/Windows.Foundation.Collections.h>
-#include "winrt/SamsungNotes.UI.Controls.h"
+#include "GroupInfosList.h"
+#include "KeyboardShortcut.h"
+
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
     struct KeyboardHelperViewModel
     {
     private:
-        hstring m_header =
-            L"Keyboard Shortcuts";
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>
-            m_noteTextEditShortcuts
-        {
-            winrt::single_threaded_observable_vector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>()
-        };
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>
-            m_noteViewPanelControlShortcuts
-        {
-            winrt::single_threaded_observable_vector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>()
-        };
+        winrt::Windows::Foundation::Collections::IObservableVector<GroupInfosList> m_textGroups =
+            winrt::single_threaded_observable_vector<GroupInfosList>();
+
+        winrt::Windows::Foundation::Collections::IObservableVector<GroupInfosList> m_viewGroups =
+            winrt::single_threaded_observable_vector<GroupInfosList>();
+
+        std::map<KeyboardShortcutHelperCategory, hstring> m_categoryText;
+
     public:
         KeyboardHelperViewModel();
-        hstring KeyboardHelperHeader();
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>
+
+        winrt::Windows::Foundation::Collections::IObservableVector<GroupInfosList>
             NoteTextEditShortcuts();
-        winrt::Windows::Foundation::Collections::
-            IObservableVector<
-            winrt::SamsungNotes::UI::Controls::KeyboardShortcut>
+
+        winrt::Windows::Foundation::Collections::IObservableVector<GroupInfosList>
             NoteViewPanelControlShortcuts();
+
+    private:
+        void GenerateGrouped(
+            std::vector<KeyboardShortcut> const& shortcuts,
+            winrt::Windows::Foundation::Collections::IObservableVector<GroupInfosList> const& target);
+
+        std::vector<KeyboardShortcut> GetTextShortcuts();
+        std::vector<KeyboardShortcut> GetViewShortcuts();
     };
 }
