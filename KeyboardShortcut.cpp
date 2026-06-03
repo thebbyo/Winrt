@@ -11,7 +11,7 @@ namespace winrt::SamsungNotes::UI::Controls::implementation
         hstring const& shortcutKey3,
         hstring const& shortcutKey4,
         KeyboardShortcutHelperCategory const& helperCategory
-        )
+    )
         : m_funcName(funcName)
         , m_shortcutKey1(shortcutKey1)
         , m_shortcutKey2(shortcutKey2)
@@ -70,12 +70,12 @@ namespace winrt::SamsungNotes::UI::Controls::implementation
     {
         m_shortcutKey4 = value;
     }
-    
+
     KeyboardShortcutHelperCategory KeyboardShortcut::HelperCategory()
     {
         return m_helperCategory;
     }
-    
+
     void KeyboardShortcut::HelperCategory(KeyboardShortcutHelperCategory const& value)
     {
         m_helperCategory = value;

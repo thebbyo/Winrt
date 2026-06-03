@@ -1,24 +1,46 @@
-#pragma once
-#include "GroupInfosList.g.h"
-#include "KeyboardShortcut.h"
+#include "pch.h"
+#include "GroupInfosList.h"
+#include "GroupInfosList.g.cpp"
 
 namespace winrt::SamsungNotes::UI::Controls::implementation
 {
-    struct GroupInfosList : GroupInfosListT<GroupInfosList>
+    GroupInfosList::GroupInfosList()
     {
-    private:
-        hstring m_key{};
-        Windows::Foundation::Collections::IVector<KeyboardShortcut> m_items =
-            winrt::single_threaded_vector<KeyboardShortcut>();
+        m_items = winrt::single_threaded_vector<winrt::SamsungNotes::UI::Controls::KeyboardShortcut>();
+    }
 
-    public:
-        GroupInfosList();
+    hstring GroupInfosList::Key()
+    {
+        return m_key;
+    }
 
-        hstring Key();
-        void Key(hstring const& value);
+    void GroupInfosList::Key(hstring const& value)
+    {
+        m_key = value;
+    }
 
-        Windows::Foundation::Collections::IVector<KeyboardShortcut> Items();
+    Windows::Foundation::Collections::IVector<winrt::SamsungNotes::UI::Controls::KeyboardShortcut> GroupInfosList::Items()
+    {
+        return m_items;
+    }
 
-        void Add(KeyboardShortcut const& item);
-    };
+    void GroupInfosList::Add(winrt::SamsungNotes::UI::Controls::KeyboardShortcut const& item)
+    {
+        m_items.Append(item);
+    }
+
+    void GroupInfosList::RemoveAt(uint32_t index)
+    {
+        m_items.RemoveAt(index);
+    }
+
+    void GroupInfosList::Clear()
+    {
+        m_items.Clear();
+    }
+
+    uint32_t GroupInfosList::Size()
+    {
+        return m_items.Size();
+    }
 }

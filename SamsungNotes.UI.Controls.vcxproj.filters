@@ -5,9 +5,6 @@
       <UniqueIdentifier>accd3aa8-1ba0-4223-9bbe-0c431709210b</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Generated Files">
-      <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common">
       <UniqueIdentifier>{1ca217e1-8453-4fa0-908d-9261db0e326b}</UniqueIdentifier>
     </Filter>
@@ -22,8 +19,10 @@
     <ClCompile Include="KeyboardShortcut.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="GroupInfosList.cpp" />
     <ClCompile Include="BooleanToVisibilityConverter.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="GroupInfosList.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,14 +40,18 @@
     <ClInclude Include="KeyboardShortcut.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="GroupInfosList.h" />
     <ClInclude Include="BooleanToVisibilityConverter.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="GroupInfosList.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Class.idl" />
-    <Midl Include="KeyboardShortcut.idl" />
+    <Midl Include="KeyboardShortcut.idl">
+      <Filter>Common</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
